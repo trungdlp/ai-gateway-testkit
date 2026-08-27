@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/trungdlp/ai-gateway-testkit/schemas/report.schema.json",
+  "$id": "https://raw.githubusercontent.com/trungdlp/ai-gateway-testkit/main/schemas/report.schema.json",
   "title": "AI Gateway Testkit canonical report",
   "type": "object",
   "required": ["$schema", "schema_version", "catalog_version", "catalog_digest", "run_id", "started_at", "duration_ms", "build", "runtime", "target", "selected_profiles", "profiles", "summary", "scenarios"],

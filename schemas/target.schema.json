@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/trungdlp/ai-gateway-testkit/schemas/target.schema.json",
+  "$id": "https://raw.githubusercontent.com/trungdlp/ai-gateway-testkit/main/schemas/target.schema.json",
   "title": "AI Gateway Testkit target manifest",
   "type": "object",
   "additionalProperties": false,
