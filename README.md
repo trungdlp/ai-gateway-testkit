@@ -8,6 +8,8 @@
 
 AI Gateway Testkit (`agtk`) is an open-source, black-box conformance and regression runner for Anthropic- and OpenAI-compatible gateways. It turns compatibility claims into repeatable test profiles, stable assertion IDs, CI-friendly verdicts, and canonical reports you can compare or safely share.
 
+![AI Gateway Testkit dashboard visualizing gateway inputs, compatibility checks, readiness charts, and verified results](docs/assets/ai-gateway-testkit-hero.webp)
+
 ```text
 gateway target + compatibility profile
                     |
