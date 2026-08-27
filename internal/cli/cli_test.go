@@ -3,9 +3,17 @@ package cli
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/trungdlp/ai-gateway-testkit/internal/report"
+	"github.com/trungdlp/ai-gateway-testkit/internal/result"
+	"github.com/trungdlp/ai-gateway-testkit/internal/testcase"
 )
 
 func TestRunVersion(t *testing.T) {
@@ -72,6 +80,57 @@ func TestRunRejectsInvalidRetryPolicyBeforeNetworkCall(t *testing.T) {
 	exitCode := Run(context.Background(), []string{"run", "--retries", "11"}, &stdout, &stderr, environment, BuildInfo{})
 	assert.Equal(t, ExitConfiguration, exitCode)
 	assert.Contains(t, stderr.String(), "retries must be between 0 and 10")
+}
+
+func TestReportRenderSanitizesByDefault(t *testing.T) {
+	t.Parallel()
+	directory := t.TempDir()
+	inputPath := filepath.Join(directory, "report.json")
+	shareablePath := filepath.Join(directory, "shareable.html")
+	fullPath := filepath.Join(directory, "full.html")
+	value := result.Report{
+		SchemaURL:      result.SchemaURL("unknown"),
+		SchemaVersion:  result.SchemaVersion,
+		CatalogVersion: "2026-08-01",
+		CatalogDigest:  "sha256:" + strings.Repeat("a", 64),
+		RunID:          "run-test",
+		StartedAt:      time.Date(2026, 8, 28, 12, 0, 0, 0, time.UTC),
+		Build:          result.Build{Version: "dev", Commit: "unknown"},
+		Target: result.Target{
+			Name: "gateway", Fingerprint: "sha256:" + strings.Repeat("b", 64),
+			Endpoints: map[string]result.TargetEndpoint{"openai": {BaseURL: "https://private.example/v1", Model: "private-model"}},
+		},
+		Profiles: []result.Profile{{ID: "oai-core", Title: "OpenAI Core", Version: "1.0.0", Verdict: result.VerdictFail}},
+		Summary:  result.Summary{Total: 1, Failed: 1},
+		Scenarios: []result.Scenario{{
+			ID: "OAI-RESP-001", Revision: 1, Title: "Responses", Layer: testcase.LayerProtocol, Status: testcase.StatusFail,
+			Assertions: []result.Assertion{{ID: "OAI-RESP-001/A01", Title: "Response is valid", Requirement: testcase.Must, Impact: testcase.Blocker, Status: testcase.StatusFail, Message: "private diagnostic"}},
+		}},
+	}
+	var encoded bytes.Buffer
+	require.NoError(t, report.Write(&encoded, report.FormatJSON, value))
+	require.NoError(t, os.WriteFile(inputPath, encoded.Bytes(), 0o600))
+
+	var stdout, stderr bytes.Buffer
+	exitCode := Run(context.Background(), []string{"report", "render", inputPath, "--output", shareablePath}, &stdout, &stderr, emptyEnvironment, BuildInfo{})
+	require.Equal(t, ExitOK, exitCode, stderr.String())
+	shareable, err := os.ReadFile(shareablePath)
+	require.NoError(t, err)
+	assert.NotContains(t, string(shareable), "https://private.example/v1")
+	assert.NotContains(t, string(shareable), "private-model")
+	assert.NotContains(t, string(shareable), "private diagnostic")
+	assert.Contains(t, string(shareable), "Share-safe")
+
+	stdout.Reset()
+	stderr.Reset()
+	exitCode = Run(context.Background(), []string{"report", "render", inputPath, "--output", fullPath, "--include-sensitive-details"}, &stdout, &stderr, emptyEnvironment, BuildInfo{})
+	require.Equal(t, ExitOK, exitCode, stderr.String())
+	full, err := os.ReadFile(fullPath)
+	require.NoError(t, err)
+	assert.Contains(t, string(full), "https://private.example/v1")
+	assert.Contains(t, string(full), "private-model")
+	assert.Contains(t, string(full), "private diagnostic")
+	assert.Contains(t, string(full), "Full details")
 }
 
 func emptyEnvironment(string) (string, bool) {
