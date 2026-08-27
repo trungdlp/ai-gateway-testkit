@@ -20,7 +20,7 @@ make check
 
 Changes should be small and test-driven. Gateway behavior must be tested with `httptest` fixtures so the default test suite remains deterministic, offline, and free of usage charges.
 
-Scenario and assertion IDs are public interfaces. Follow the identity, revision, status, reason-code, and profile rules in [docs/architecture.md](docs/architecture.md). After changing a case or profile, run `go generate ./...` and include the generated catalog changes.
+Scenario and assertion IDs are public interfaces. Follow the identity, revision, status, reason-code, and profile rules in [docs/architecture.md](docs/architecture.md). Put each scenario in exactly one ID-named Go file, register it from that file, and do not add it to a shared list. After changing a case or profile, run `go generate ./...` and include its per-case JSON and Markdown artifacts.
 
 ## Pull requests
 

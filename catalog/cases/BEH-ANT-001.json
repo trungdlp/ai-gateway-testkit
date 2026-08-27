@@ -1,0 +1,32 @@
+{
+  "id": "BEH-ANT-001",
+  "revision": 1,
+  "title": "Anthropic exact instruction following",
+  "description": "Checks exact instruction following independently from protocol schema compatibility.",
+  "layer": "behavioral",
+  "suite": "anthropic",
+  "area": "instruction_following",
+  "stability": "stable",
+  "determinism": "probabilistic",
+  "depends_on": [
+    "ANT-MSG-001"
+  ],
+  "cost": {
+    "requests": 1,
+    "max_input_tokens": 64,
+    "max_output_tokens": 16
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": true
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Model follows an exact-output instruction",
+      "requirement": "should",
+      "impact": "medium"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "id": "ANT-TOOL-001",
+  "revision": 1,
+  "title": "Anthropic forced tool use",
+  "description": "Forces a tool and validates its identity and structured input.",
+  "layer": "protocol",
+  "suite": "anthropic",
+  "area": "tools",
+  "stability": "stable",
+  "determinism": "deterministic",
+  "spec_references": [
+    {
+      "title": "Anthropic API reference",
+      "url": "https://docs.anthropic.com/en/api/overview"
+    }
+  ],
+  "depends_on": [
+    "ANT-AUTH-001"
+  ],
+  "cost": {
+    "requests": 1,
+    "max_input_tokens": 128,
+    "max_output_tokens": 64
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": true
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Tool request succeeds",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Tool response is valid JSON",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A03",
+      "title": "Requested tool is selected",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A04",
+      "title": "Tool use block has an ID",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A05",
+      "title": "Tool input contains the required value",
+      "requirement": "must",
+      "impact": "high"
+    }
+  ]
+}

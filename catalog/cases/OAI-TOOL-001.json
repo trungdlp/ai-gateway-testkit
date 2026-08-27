@@ -1,0 +1,62 @@
+{
+  "id": "OAI-TOOL-001",
+  "revision": 1,
+  "title": "OpenAI forced function call",
+  "description": "Forces a function tool and validates its call identity and arguments.",
+  "layer": "protocol",
+  "suite": "openai",
+  "area": "tools",
+  "stability": "stable",
+  "determinism": "deterministic",
+  "spec_references": [
+    {
+      "title": "OpenAI API reference",
+      "url": "https://developers.openai.com/api/reference/"
+    }
+  ],
+  "depends_on": [
+    "OAI-AUTH-001"
+  ],
+  "cost": {
+    "requests": 1,
+    "max_input_tokens": 128,
+    "max_output_tokens": 64
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": true
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Tool request succeeds",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Tool response is valid JSON",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A03",
+      "title": "Requested function is selected",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A04",
+      "title": "Function call has a call ID",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A05",
+      "title": "Function arguments are valid JSON",
+      "requirement": "must",
+      "impact": "high"
+    }
+  ]
+}

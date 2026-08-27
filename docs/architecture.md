@@ -48,7 +48,7 @@ When a later attempt succeeds, the assertion is evaluated normally and scenario 
 | --- | --- |
 | `cmd/agtk` | CLI process entry point and build metadata. |
 | `cmd/cataloggen` | Reproducibly generates the public catalog artifacts. |
-| `cases/*` | Executable scenario definitions grouped by suite. |
+| `cases/*` | Executable scenario definitions grouped by implementation family; each scenario has one ID-named Go file. |
 | `internal/testcase` | Public-in-practice vocabulary: definition, assertion, status, cost, risk, environment, and runner contracts. |
 | `internal/catalog` | Catalog validation, dependency graph validation, deterministic ordering, version, and digest. |
 | `internal/profile` | Embedded, versioned profile definitions and recursive expansion. |
@@ -60,7 +60,8 @@ When a later attempt succeeds, the assertion is evaluated normally and scenario 
 | `internal/result` | Canonical report model. |
 | `internal/report` | Text/JSON rendering, strict decoding, and sanitization. |
 | `internal/compare` | Assertion-level baseline classification. |
-| `catalog/` | Generated machine-readable catalog. |
+| `catalog/cases/` | One generated machine-readable JSON definition per scenario. |
+| `docs/cases/` | One generated human-readable contract per scenario. |
 | `schemas/` | JSON Schemas for targets and reports. |
 
 Packages under `internal` may evolve without becoming a Go library compatibility promise. Scenario IDs, assertion IDs, profile IDs and versions, catalog versions, CLI exit codes, and the report schema are user-facing contracts.
@@ -122,7 +123,9 @@ The catalog is compiled from Go scenario definitions. Startup validation rejects
 
 Catalog definitions are sorted before hashing. The report records the catalog version and SHA-256 digest. Comparison is fully comparable only when digests match; otherwise assertion states are marked `not_comparable` to avoid false regression claims.
 
-`catalog/catalog.json` and `docs/test-catalog.md` are generated from the executable definitions. `go run ./cmd/cataloggen --check` is the drift check used by CI.
+Each executable scenario is the source of truth for two generated artifacts: `catalog/cases/<ID>.json` and `docs/cases/<ID>.md`. Keeping artifacts per ID lets contributors add unrelated scenarios without editing a shared generated index. `agtk catalog export` remains the canonical way to produce one aggregate catalog for downstream tools.
+
+Suite packages expose a small registry, and each case file registers its own definition during package initialization. Registration order is irrelevant because catalog construction sorts and validates definitions. The generator also requires every registered ID to map to exactly one `cases/*/<lowercase_id>.go` source file, rejects stale or missing artifacts in check mode, and removes orphan generated artifacts during generation. `go run ./cmd/cataloggen --check` is the drift and layout check used by CI.
 
 ## Profiles and compatibility claims
 
@@ -198,12 +201,14 @@ Any non-pass status is failure-like for change classification, while the origina
 ## Adding a scenario
 
 1. Choose the correct layer and a permanent suite/area ID.
-2. State observable assertions before writing request code.
-3. Declare stability, determinism, spec references, dependencies, bounded cost, and risk.
-4. Implement a runner with synthetic fixtures and no remote mutation unless explicitly classified and cleaned up.
-5. Add local `httptest` coverage for successful, incompatible, and unavailable-evidence paths.
-6. Add the scenario or assertion to the narrowest appropriate profile.
-7. Run `go generate ./...` and `make check`.
+2. Create exactly one source file named from the lowercase ID with hyphens replaced by underscores, for example `cases/openai/oai_resp_002.go`.
+3. State observable assertions before writing request code, build the complete definition in that file, and call the package's `register` function from `init`. Do not edit a shared case list.
+4. Declare stability, determinism, spec references, dependencies, bounded cost, and risk.
+5. Implement a runner with synthetic fixtures and no remote mutation unless explicitly classified and cleaned up.
+6. Add local `httptest` coverage for successful, incompatible, and unavailable-evidence paths.
+7. Add the scenario or assertion to the narrowest appropriate profile only when the compatibility claim should change. Profile files are intentionally shared semantic contracts, so concurrent edits may require reconciliation.
+8. Run `go generate ./...`. Commit the new `catalog/cases/<ID>.json` and `docs/cases/<ID>.md` alongside the source file.
+9. Run `make check`.
 
 Do not weaken an assertion so more providers pass. Represent an optional capability with a separate profile or optional reference. Do not mix model-quality diagnostics into protocol claims. A scenario should be split when its requests, dependencies, lifecycle, or failure ownership differ materially.
 

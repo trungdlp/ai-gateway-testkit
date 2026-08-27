@@ -1,0 +1,68 @@
+{
+  "id": "OAI-RESP-001",
+  "revision": 1,
+  "title": "OpenAI non-streaming response",
+  "description": "Creates and validates a minimal non-streaming Responses API result.",
+  "layer": "protocol",
+  "suite": "openai",
+  "area": "responses",
+  "stability": "stable",
+  "determinism": "deterministic",
+  "spec_references": [
+    {
+      "title": "OpenAI API reference",
+      "url": "https://developers.openai.com/api/reference/"
+    }
+  ],
+  "depends_on": [
+    "OAI-AUTH-001"
+  ],
+  "cost": {
+    "requests": 1,
+    "max_input_tokens": 128,
+    "max_output_tokens": 64
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": true
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Responses request succeeds",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Responses body is valid JSON",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A03",
+      "title": "Response object discriminator is valid",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A04",
+      "title": "Response reaches completed state",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A05",
+      "title": "Response identifies a model",
+      "requirement": "must",
+      "impact": "medium"
+    },
+    {
+      "id": "A06",
+      "title": "Response contains non-empty output text",
+      "requirement": "must",
+      "impact": "high"
+    }
+  ]
+}

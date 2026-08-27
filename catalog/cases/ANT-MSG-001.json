@@ -1,0 +1,62 @@
+{
+  "id": "ANT-MSG-001",
+  "revision": 1,
+  "title": "Anthropic non-streaming message",
+  "description": "Creates and validates a minimal non-streaming Messages API result.",
+  "layer": "protocol",
+  "suite": "anthropic",
+  "area": "messages",
+  "stability": "stable",
+  "determinism": "deterministic",
+  "spec_references": [
+    {
+      "title": "Anthropic API reference",
+      "url": "https://docs.anthropic.com/en/api/overview"
+    }
+  ],
+  "depends_on": [
+    "ANT-AUTH-001"
+  ],
+  "cost": {
+    "requests": 1,
+    "max_input_tokens": 128,
+    "max_output_tokens": 64
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": true
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Messages request succeeds",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Messages response is valid JSON",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A03",
+      "title": "Message discriminator and role are valid",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A04",
+      "title": "Message identifies a model",
+      "requirement": "must",
+      "impact": "medium"
+    },
+    {
+      "id": "A05",
+      "title": "Message contains non-empty text",
+      "requirement": "must",
+      "impact": "high"
+    }
+  ]
+}
