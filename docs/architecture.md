@@ -200,6 +200,8 @@ Any non-pass status is failure-like for change classification, while the origina
 
 ## Adding a scenario
 
+Before implementing a roadmap item, review the accepted [test case roadmap proposal](proposals/test-case-roadmap.md). A reserved proposal ID is not an executable compatibility contract until its source definition, deterministic tests, generated artifacts, and intended profile change are merged.
+
 1. Choose the correct layer and a permanent suite/area ID.
 2. Create exactly one source file named from the lowercase ID with hyphens replaced by underscores, for example `cases/openai/oai_resp_002.go`.
 3. State observable assertions before writing request code, build the complete definition in that file, and call the package's `register` function from `init`. Do not edit a shared case list.
