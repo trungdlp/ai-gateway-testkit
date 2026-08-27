@@ -171,6 +171,8 @@ The checked-in report and target schemas use canonical `$id` values on `raw.gith
 
 Credentials are injected only into intended authorization mechanisms. The live environment redacts all configured credential values and the synthetic invalid credential from error messages and evidence. Transport bodies are bounded separately. `agtk report sanitize` additionally removes endpoint URLs, model IDs, evidence, expected/observed values, and diagnostic messages for safer sharing. The target name and fingerprint remain so reports from the same public configuration can still be correlated.
 
+`agtk report render` produces a standalone HTML presentation from the canonical JSON report without changing its schema or compatibility semantics. The renderer embeds its CSS and JavaScript for offline use, escapes report-controlled content, and sanitizes share-sensitive fields by default. Full diagnostic detail requires an explicit opt-in.
+
 Sanitization is a sharing aid, not a substitute for using synthetic prompts and non-production data.
 
 ## Agent execution with Docker Sandboxes

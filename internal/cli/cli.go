@@ -313,6 +313,26 @@ func (a *app) newReportCommand() *cobra.Command {
 		}
 		return report.Write(a.stdout, report.FormatJSON, report.Sanitize(value))
 	}})
+	var output string
+	var includeSensitiveDetails bool
+	render := &cobra.Command{Use: "render INPUT", Short: "Render a standalone HTML report", Long: "Render a standalone, interactive HTML report. Endpoint, model, evidence, and diagnostic details are removed by default for safer sharing.", Args: cobra.ExactArgs(1), RunE: func(_ *cobra.Command, args []string) error {
+		value, err := readReport(args[0])
+		if err != nil {
+			return err
+		}
+		if !includeSensitiveDetails {
+			value = report.Sanitize(value)
+		}
+		writer, closeWriter, err := a.outputWriter(output)
+		if err != nil {
+			return err
+		}
+		defer closeWriter()
+		return report.WriteHTML(writer, value)
+	}}
+	render.Flags().StringVarP(&output, "output", "o", "", "write the HTML report to a file instead of stdout")
+	render.Flags().BoolVar(&includeSensitiveDetails, "include-sensitive-details", false, "include endpoints, models, evidence, and diagnostic text")
+	command.AddCommand(render)
 	return command
 }
 

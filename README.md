@@ -209,6 +209,14 @@ agtk report sanitize report.json > shareable.json
 
 Sanitization removes endpoint URLs, model IDs, evidence, expected and observed values, and diagnostic messages. It is defense in depth, not a data-loss-prevention boundary: always use synthetic prompts and test credentials.
 
+Render a polished, self-contained HTML report for stakeholders:
+
+```sh
+agtk report render report.json --output report.html
+```
+
+The HTML report works offline, includes accessible assertion-distribution and profile-readiness charts, responsive profile and scenario views, search and result filters, dark and light themes, and print-to-PDF styling. Rendering is share-safe by default and removes the same sensitive details as `report sanitize`. Use `--include-sensitive-details` only when the report will remain in a trusted environment and diagnostic evidence is required.
+
 Remote targets require HTTPS by default; loopback HTTP remains available for local fixtures. OpenAI requests set `store: false`. See [SECURITY.md](SECURITY.md) to report a vulnerability.
 
 ## Contributing
