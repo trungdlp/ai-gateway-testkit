@@ -164,6 +164,8 @@ The canonical report records schema/catalog versions, catalog digest, run ID, st
 
 Schema version 1.1 adds a top-level `$schema` URL. For clean builds it points to the raw schema file under the exact 40-character Git commit recorded in `build.commit`, making validation independent of future changes on `main`. The decoder verifies that these values agree. `make build` injects the clean source commit, while direct Go builds recover clean VCS metadata from the runtime build information. A dirty development build cannot truthfully reference an unpublished commit, so it records `unknown` and uses the `main` schema URL as an explicit mutable fallback.
 
+The checked-in report and target schemas use canonical `$id` values on `raw.githubusercontent.com`, where validators can retrieve JSON directly. GitHub repository paths without `/blob/<ref>/` are not file URLs, while `/blob/` URLs return HTML and therefore are not suitable schema identifiers.
+
 Credentials are injected only into intended authorization mechanisms. The live environment redacts all configured credential values and the synthetic invalid credential from error messages and evidence. Transport bodies are bounded separately. `agtk report sanitize` additionally removes endpoint URLs, model IDs, evidence, expected/observed values, and diagnostic messages for safer sharing. The target name and fingerprint remain so reports from the same public configuration can still be correlated.
 
 Sanitization is a sharing aid, not a substitute for using synthetic prompts and non-production data.
