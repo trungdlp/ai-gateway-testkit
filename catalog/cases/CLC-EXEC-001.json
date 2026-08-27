@@ -1,0 +1,54 @@
+{
+  "id": "CLC-EXEC-001",
+  "revision": 1,
+  "title": "Claude Code non-interactive coding workflow",
+  "description": "Runs an isolated, non-interactive coding task and verifies filesystem and shell-tool effects.",
+  "layer": "agent",
+  "suite": "claude",
+  "area": "execution",
+  "stability": "experimental",
+  "determinism": "operational",
+  "preconditions": [
+    "sbx is installed and authenticated",
+    "agent sandbox image is available"
+  ],
+  "depends_on": [
+    "ANT-TOOL-001"
+  ],
+  "cost": {
+    "requests": 0,
+    "max_input_tokens": 512,
+    "max_output_tokens": 256
+  },
+  "risk": {
+    "mutation": "ephemeral_workspace",
+    "cleanup_required": true,
+    "contains_model_output": true
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Agent process completes successfully",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Agent creates the requested file",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A03",
+      "title": "Created file has the exact requested content",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A04",
+      "title": "Agent invokes the fixture validator",
+      "requirement": "must",
+      "impact": "high"
+    }
+  ]
+}

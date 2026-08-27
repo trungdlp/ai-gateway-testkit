@@ -1,0 +1,56 @@
+{
+  "id": "OAI-MODL-001",
+  "revision": 1,
+  "title": "OpenAI model discovery",
+  "description": "Validates the models list envelope and configured model discovery.",
+  "layer": "protocol",
+  "suite": "openai",
+  "area": "models",
+  "stability": "stable",
+  "determinism": "deterministic",
+  "spec_references": [
+    {
+      "title": "OpenAI API reference",
+      "url": "https://developers.openai.com/api/reference/"
+    }
+  ],
+  "depends_on": [
+    "OAI-AUTH-001"
+  ],
+  "cost": {
+    "requests": 1,
+    "max_input_tokens": 128,
+    "max_output_tokens": 64
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": false
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Models request succeeds",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Models response is valid JSON",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A03",
+      "title": "Models response uses the list envelope",
+      "requirement": "must",
+      "impact": "high"
+    },
+    {
+      "id": "A04",
+      "title": "Configured model is discoverable",
+      "requirement": "must",
+      "impact": "high"
+    }
+  ]
+}

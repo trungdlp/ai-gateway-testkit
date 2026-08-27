@@ -1,0 +1,47 @@
+{
+  "id": "OAI-AUTH-001",
+  "revision": 1,
+  "title": "OpenAI authentication boundary",
+  "description": "Verifies rejection and non-reflection of missing and invalid bearer credentials.",
+  "layer": "protocol",
+  "suite": "openai",
+  "area": "auth",
+  "stability": "stable",
+  "determinism": "deterministic",
+  "spec_references": [
+    {
+      "title": "OpenAI API reference",
+      "url": "https://developers.openai.com/api/reference/"
+    }
+  ],
+  "cost": {
+    "requests": 2,
+    "max_input_tokens": 128,
+    "max_output_tokens": 64
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": false
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Missing credentials are rejected",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Invalid credentials are rejected",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A03",
+      "title": "Credentials are not reflected in error responses",
+      "requirement": "must",
+      "impact": "blocker"
+    }
+  ]
+}

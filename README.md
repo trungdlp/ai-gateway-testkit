@@ -83,7 +83,7 @@ Available profiles include:
 - `anthropic-core`, `anthropic-tools`, `anthropic-sdk-go`, `behavioral-anthropic`;
 - experimental `codex-ready` and `claude-code-ready`.
 
-The generated [test catalog](docs/test-catalog.md) is the current index of scenarios and profiles.
+Every scenario has its own generated [case document](docs/cases/) and machine-readable definition under [`catalog/cases`](catalog/cases/). Use `agtk profiles` for compatibility-profile composition and `agtk catalog export` when a single aggregate catalog is needed.
 
 ## Verdicts and exit codes
 
@@ -135,7 +135,7 @@ make check
 
 `make check` verifies formatting, the generated catalog, static analysis, race-enabled tests, and the CLI build. Cobra provides the command surface, Testify is used for tests, `slog` emits diagnostics, and the official `openai-go` and `anthropic-sdk-go` clients power SDK interoperability cases.
 
-Read [docs/architecture.md](docs/architecture.md) before adding scenarios or changing report semantics. Contribution expectations are in [CONTRIBUTING.md](CONTRIBUTING.md).
+Read [docs/architecture.md](docs/architecture.md) before adding scenarios or changing report semantics. Each scenario lives in one independently reviewable Go file and generates one JSON and one Markdown artifact. Contribution expectations are in [CONTRIBUTING.md](CONTRIBUTING.md); coding-agent guidance is in [AGENTS.md](AGENTS.md).
 
 ## License
 

@@ -1,0 +1,44 @@
+{
+  "id": "OAI-SDK-001",
+  "revision": 1,
+  "title": "OpenAI Go SDK interoperability",
+  "description": "Uses the official OpenAI Go SDK against the configured gateway.",
+  "layer": "sdk",
+  "suite": "openai",
+  "area": "sdk",
+  "stability": "stable",
+  "determinism": "deterministic",
+  "spec_references": [
+    {
+      "title": "OpenAI API reference",
+      "url": "https://developers.openai.com/api/reference/"
+    }
+  ],
+  "depends_on": [
+    "OAI-AUTH-001"
+  ],
+  "cost": {
+    "requests": 1,
+    "max_input_tokens": 128,
+    "max_output_tokens": 64
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": false
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Official SDK request and deserialization succeed",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Official SDK exposes non-empty output text",
+      "requirement": "must",
+      "impact": "high"
+    }
+  ]
+}

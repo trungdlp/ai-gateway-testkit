@@ -1,0 +1,44 @@
+{
+  "id": "ANT-SDK-001",
+  "revision": 1,
+  "title": "Anthropic Go SDK interoperability",
+  "description": "Uses the official Anthropic Go SDK against the configured gateway.",
+  "layer": "sdk",
+  "suite": "anthropic",
+  "area": "sdk",
+  "stability": "stable",
+  "determinism": "deterministic",
+  "spec_references": [
+    {
+      "title": "Anthropic API reference",
+      "url": "https://docs.anthropic.com/en/api/overview"
+    }
+  ],
+  "depends_on": [
+    "ANT-AUTH-001"
+  ],
+  "cost": {
+    "requests": 1,
+    "max_input_tokens": 128,
+    "max_output_tokens": 64
+  },
+  "risk": {
+    "mutation": "none",
+    "cleanup_required": false,
+    "contains_model_output": false
+  },
+  "assertions": [
+    {
+      "id": "A01",
+      "title": "Official SDK request and deserialization succeed",
+      "requirement": "must",
+      "impact": "blocker"
+    },
+    {
+      "id": "A02",
+      "title": "Official SDK exposes non-empty output text",
+      "requirement": "must",
+      "impact": "high"
+    }
+  ]
+}

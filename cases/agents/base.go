@@ -11,13 +11,6 @@ import (
 
 const expectedFile = "AGTK_AGENT_OK"
 
-func Definitions() []testcase.Definition {
-	return []testcase.Definition{
-		agentCase("CDX-EXEC-001", "Codex non-interactive coding workflow", "codex", "openai", "OAI-TOOL-001"),
-		agentCase("CLC-EXEC-001", "Claude Code non-interactive coding workflow", "claude", "anthropic", "ANT-TOOL-001"),
-	}
-}
-
 func agentCase(id, title, agent, protocol, dependency string) testcase.Definition {
 	assertions := caseutil.Assertions(
 		caseutil.Assertion("A01", "Agent process completes successfully", testcase.Must, testcase.Blocker),
