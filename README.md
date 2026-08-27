@@ -114,7 +114,9 @@ Without `--agent-runner sbx`, agent assertions are skipped and their readiness p
 
 ## Reports and security
 
-The canonical JSON schema is [schemas/report.schema.json](schemas/report.schema.json). Reports carry build/runtime provenance, target fingerprint, catalog version and digest, scenario revisions, assertion-level statuses/reason codes, profile verdicts, and bounded evidence.
+The canonical JSON schema is [schemas/report.schema.json](schemas/report.schema.json). Every report contains a top-level `$schema` URL pinned to the exact Git commit recorded in `build.commit`, for example `https://raw.githubusercontent.com/trungdlp/ai-gateway-testkit/<commit>/schemas/report.schema.json`. Reports also carry runtime provenance, target fingerprint, catalog version and digest, scenario revisions, assertion-level statuses/reason codes, profile verdicts, and bounded evidence.
+
+Clean `make build` and release builds embed the full source commit automatically. Direct clean Go builds recover the revision from Go VCS build information. Dirty development builds deliberately use `build.commit: unknown` and the mutable `main` schema URL instead of claiming an incorrect immutable revision.
 
 Reports include logical raw HTTP requests, total attempts, recovered retries, and exhausted retry counts. Exhausted transient failures produce `error` and an `INDETERMINATE` profile—not a false incompatibility claim.
 

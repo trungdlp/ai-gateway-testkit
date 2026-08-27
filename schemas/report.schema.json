@@ -3,9 +3,10 @@
   "$id": "https://github.com/trungdlp/ai-gateway-testkit/schemas/report.schema.json",
   "title": "AI Gateway Testkit canonical report",
   "type": "object",
-  "required": ["schema_version", "catalog_version", "catalog_digest", "run_id", "started_at", "duration_ms", "build", "runtime", "target", "selected_profiles", "profiles", "summary", "scenarios"],
+  "required": ["$schema", "schema_version", "catalog_version", "catalog_digest", "run_id", "started_at", "duration_ms", "build", "runtime", "target", "selected_profiles", "profiles", "summary", "scenarios"],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "$schema": {"type": "string", "format": "uri"},
+    "schema_version": {"const": "1.1.0"},
     "catalog_version": {"type": "string"},
     "catalog_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
     "run_id": {"type": "string", "minLength": 1},

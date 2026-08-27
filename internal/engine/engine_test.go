@@ -29,7 +29,8 @@ func TestEngineRunsOpenAICoreProfile(t *testing.T) {
 	require.NoError(t, err)
 	targets := target.Resolved{Name: "fixture", Endpoints: map[string]testcase.Target{"openai": {Protocol: "openai", BaseURL: server.URL + "/v1", Model: "test-model", Credential: "test-secret", Timeout: time.Second, Retry: gateway.RetryPolicy{MaxRetries: 2, InitialBackoff: time.Millisecond, MaxBackoff: time.Millisecond}}}}
 
-	reportValue, err := New(catalog, profiles, targets).Run(context.Background(), Options{Profiles: []string{"oai-tools", "oai-sdk-go"}})
+	commit := "0123456789012345678901234567890123456789"
+	reportValue, err := New(catalog, profiles, targets).Run(context.Background(), Options{Profiles: []string{"oai-tools", "oai-sdk-go"}, Build: result.Build{Commit: commit}})
 
 	require.NoError(t, err)
 	require.Len(t, reportValue.Profiles, 2)
@@ -37,6 +38,7 @@ func TestEngineRunsOpenAICoreProfile(t *testing.T) {
 	assert.Equal(t, result.VerdictPass, reportValue.Profiles[1].Verdict)
 	assert.Equal(t, reportValue.Summary.Total, reportValue.Summary.Passed)
 	assert.NotEmpty(t, reportValue.CatalogDigest)
+	assert.Contains(t, reportValue.SchemaURL, commit)
 }
 
 func TestEngineRecordsRecoveredTransientRetry(t *testing.T) {

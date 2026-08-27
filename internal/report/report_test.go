@@ -28,11 +28,18 @@ func TestWriteJSON(t *testing.T) {
 	t.Parallel()
 
 	var output bytes.Buffer
-	value := result.Report{SchemaVersion: result.SchemaVersion}
+	value := result.Report{SchemaURL: result.SchemaURL("unknown"), SchemaVersion: result.SchemaVersion, Build: result.Build{Commit: "unknown"}}
 	require.NoError(t, Write(&output, FormatJSON, value))
 	var decoded result.Report
 	require.NoError(t, json.Unmarshal(output.Bytes(), &decoded))
 	assert.Equal(t, result.SchemaVersion, decoded.SchemaVersion)
+}
+
+func TestDecodeRejectsSchemaURLThatDoesNotMatchBuild(t *testing.T) {
+	t.Parallel()
+	input := `{"$schema":"https://example.com/report.schema.json","schema_version":"1.1.0","build":{"commit":"unknown"}}`
+	_, err := Decode(bytes.NewBufferString(input))
+	assert.ErrorContains(t, err, "does not match build commit")
 }
 
 func TestSanitizeRemovesShareSensitiveFields(t *testing.T) {

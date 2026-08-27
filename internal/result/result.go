@@ -1,12 +1,27 @@
 package result
 
 import (
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/trungdlp/ai-gateway-testkit/internal/testcase"
 )
 
-const SchemaVersion = "1.0.0"
+const (
+	SchemaVersion       = "1.1.0"
+	reportSchemaBaseURL = "https://raw.githubusercontent.com/trungdlp/ai-gateway-testkit"
+)
+
+var fullCommitPattern = regexp.MustCompile(`^[0-9a-fA-F]{40}$`)
+
+func SchemaURL(commit string) string {
+	commit = strings.TrimSpace(commit)
+	if !fullCommitPattern.MatchString(commit) {
+		commit = "main"
+	}
+	return reportSchemaBaseURL + "/" + commit + "/schemas/report.schema.json"
+}
 
 type Build struct {
 	Version string `json:"version"`
@@ -105,6 +120,7 @@ type Summary struct {
 }
 
 type Report struct {
+	SchemaURL        string     `json:"$schema"`
 	SchemaVersion    string     `json:"schema_version"`
 	CatalogVersion   string     `json:"catalog_version"`
 	CatalogDigest    string     `json:"catalog_digest"`

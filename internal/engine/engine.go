@@ -91,7 +91,7 @@ func (e *Engine) Run(ctx context.Context, options Options) (result.Report, error
 		return result.Report{}, err
 	}
 	report := result.Report{
-		SchemaVersion: result.SchemaVersion, CatalogVersion: catalog.Version, CatalogDigest: e.catalog.Digest(),
+		SchemaURL: result.SchemaURL(options.Build.Commit), SchemaVersion: result.SchemaVersion, CatalogVersion: catalog.Version, CatalogDigest: e.catalog.Digest(),
 		RunID: newRunID(), StartedAt: started, DurationMS: time.Since(started).Milliseconds(), Build: options.Build,
 		Runtime: result.Runtime{OS: runtime.GOOS, Arch: runtime.GOARCH, GoVersion: runtime.Version(), DependencyVersions: dependencyVersions(), Retry: retryResult(e.targets, environment.RetryStats())},
 		Target:  publicTarget(e.targets), SelectedProfiles: append([]string(nil), options.Profiles...), Profiles: evaluations, Scenarios: scenarios,

@@ -36,8 +36,14 @@ func Decode(reader io.Reader) (result.Report, error) {
 	if err := decoder.Decode(&value); err != nil {
 		return result.Report{}, err
 	}
-	if value.SchemaVersion != result.SchemaVersion {
+	if value.SchemaVersion != result.SchemaVersion && value.SchemaVersion != "1.0.0" {
 		return result.Report{}, fmt.Errorf("unsupported report schema version %q", value.SchemaVersion)
+	}
+	if value.SchemaVersion == result.SchemaVersion {
+		expected := result.SchemaURL(value.Build.Commit)
+		if value.SchemaURL != expected {
+			return result.Report{}, fmt.Errorf("report schema URL %q does not match build commit; expected %q", value.SchemaURL, expected)
+		}
 	}
 	return value, nil
 }
