@@ -1,0 +1,7 @@
+id: oai-tools
+version: 1.0.0
+title: OpenAI Tool Calling
+description: OpenAI function-tool request and response compatibility.
+includes: [oai-core]
+required:
+  - OAI-TOOL-001

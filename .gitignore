@@ -1,0 +1,15 @@
+# Build outputs
+/bin/
+/dist/
+*.out
+coverage.txt
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/

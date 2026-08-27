@@ -1,0 +1,8 @@
+id: oai-core
+version: 1.0.0
+title: OpenAI Core
+description: Authentication, discovery, and non-streaming Responses API conformance.
+required:
+  - OAI-AUTH-001
+  - OAI-MODL-001
+  - OAI-RESP-001

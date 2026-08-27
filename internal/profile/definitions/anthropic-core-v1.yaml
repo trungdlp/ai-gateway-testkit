@@ -1,0 +1,8 @@
+id: anthropic-core
+version: 1.0.0
+title: Anthropic Core
+description: Authentication, discovery, and non-streaming Messages API conformance.
+required:
+  - ANT-AUTH-001
+  - ANT-MODL-001
+  - ANT-MSG-001

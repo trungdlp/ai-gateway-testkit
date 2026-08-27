@@ -1,0 +1,6 @@
+id: behavioral-openai
+version: 1.0.0
+title: OpenAI Behavioral Diagnostics
+description: Diagnostic instruction-following checks; not a protocol-conformance claim.
+required:
+  - BEH-OAI-001

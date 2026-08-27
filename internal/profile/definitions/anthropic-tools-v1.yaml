@@ -1,0 +1,7 @@
+id: anthropic-tools
+version: 1.0.0
+title: Anthropic Tool Calling
+description: Anthropic tool-use request and response compatibility.
+includes: [anthropic-core]
+required:
+  - ANT-TOOL-001

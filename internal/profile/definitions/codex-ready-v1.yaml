@@ -1,0 +1,7 @@
+id: codex-ready
+version: 1.0.0
+title: Codex Ready
+description: Non-interactive Codex coding workflow in an ephemeral sandbox.
+includes: [oai-tools, oai-sdk-go]
+required:
+  - CDX-EXEC-001

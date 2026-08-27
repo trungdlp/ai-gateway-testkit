@@ -1,0 +1,6 @@
+id: anthropic-sdk-go
+version: 1.0.0
+title: Anthropic Go SDK
+description: Interoperability with the official Anthropic Go SDK.
+required:
+  - ANT-SDK-001

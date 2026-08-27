@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/trungdlp/ai-gateway-testkit/schemas/target.schema.json",
+  "title": "AI Gateway Testkit target manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "anyOf": [{"required": ["openai"]}, {"required": ["anthropic"]}],
+  "properties": {
+    "name": {"type": "string", "minLength": 1},
+    "openai": {"$ref": "#/$defs/endpoint"},
+    "anthropic": {"$ref": "#/$defs/endpoint"}
+  },
+  "$defs": {
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_url", "model", "credential_env"],
+      "properties": {
+        "base_url": {"type": "string", "format": "uri"},
+        "model": {"type": "string", "minLength": 1},
+        "credential_env": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+        "api_version": {"type": "string"}
+      }
+    }
+  }
+}

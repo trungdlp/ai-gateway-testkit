@@ -1,0 +1,10 @@
+name: example-gateway
+openai:
+  base_url: https://gateway.example.com/v1
+  model: openai-compatible-model
+  credential_env: OPENAI_GATEWAY_API_KEY
+anthropic:
+  base_url: https://gateway.example.com/v1
+  model: anthropic-compatible-model
+  credential_env: ANTHROPIC_GATEWAY_API_KEY
+  api_version: "2023-06-01"

@@ -1,0 +1,7 @@
+id: claude-code-ready
+version: 1.0.0
+title: Claude Code Ready
+description: Non-interactive Claude Code workflow in an ephemeral sandbox.
+includes: [anthropic-tools, anthropic-sdk-go]
+required:
+  - CLC-EXEC-001

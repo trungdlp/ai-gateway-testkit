@@ -1,0 +1,31 @@
+name: Compatibility proposal
+description: Propose a new gateway contract or agent scenario
+title: "proposal: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Compatibility problem
+      description: Describe the user-visible incompatibility and affected API or agent.
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Proposed observable contract
+      description: State what request the test sends and what it should assert.
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: Specifications or references
+      description: Link primary documentation where possible.
+  - type: textarea
+    id: cost
+    attributes:
+      label: Runtime, token, and mutation impact
+      description: Estimate live requests and identify any remote state created by the test.
+    validations:
+      required: true
