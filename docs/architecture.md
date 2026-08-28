@@ -186,7 +186,7 @@ Agent scenarios run only when `--agent-runner sbx` is selected. The runner:
 5. verifies the requested file content and a marker produced only by the fixture validator;
 6. removes the named sandbox and both temporary locations.
 
-The separate mode-`0600` env file contains only the base URL and model and lives outside the mounted workspace. Codex uses `exec --ephemeral`; Claude Code uses print mode with session persistence disabled. Permission bypass is confined to the outer Docker sandbox and disposable fixture. The host repository is never mounted for these cases. If `sbx` execution is not enabled, agent assertions are `skipped`, making an agent-readiness profile `INDETERMINATE` rather than producing a false pass.
+The sandbox environment receives only the non-secret base URL and model directly; the credential remains a proxy-managed placeholder scoped to the sandbox and gateway host. Codex uses `exec --ephemeral`; Claude Code uses print mode with session persistence disabled. Anthropic targets use a versioned API base for protocol requests; the Claude Code adapter removes one terminal `/v1` before setting `ANTHROPIC_BASE_URL` because Claude Code appends its own `/v1` endpoint paths. Permission bypass is confined to the outer Docker sandbox and disposable fixture. The host repository is never mounted for these cases. If `sbx` execution is not enabled, agent assertions are `skipped`, making an agent-readiness profile `INDETERMINATE` rather than producing a false pass.
 
 ## Baseline comparison
 

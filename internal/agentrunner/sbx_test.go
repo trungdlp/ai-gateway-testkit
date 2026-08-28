@@ -26,19 +26,24 @@ func TestFixtureDoesNotContainCredential(t *testing.T) {
 	}
 }
 
-func TestWriteEnvironmentContainsNoCredential(t *testing.T) {
+func TestAgentExecArgumentsUseAnthropicGatewayRootWithoutEnvFileOrCredential(t *testing.T) {
 	t.Parallel()
-	file, err := os.CreateTemp(t.TempDir(), "env")
-	require.NoError(t, err)
-	target := testcase.Target{Model: "test-model", BaseURL: "https://gateway.example/v1", Credential: "top-secret"}
-	require.NoError(t, writeEnvironment(file, testcase.AgentRequest{Protocol: "anthropic"}, target))
-	require.NoError(t, file.Close())
-	content, err := os.ReadFile(file.Name())
-	require.NoError(t, err)
-	assert.Contains(t, string(content), "ANTHROPIC_BASE_URL=https://gateway.example/v1")
-	assert.NotContains(t, string(content), "top-secret")
-	assert.NotContains(t, string(content), "ANTHROPIC_API_KEY")
-	assert.False(t, strings.Contains(string(content), "OPENAI_API_KEY"))
+	target := testcase.Target{Model: "test-model", BaseURL: "https://gateway.example/anthropic/v1", Credential: "top-secret"}
+	args := agentExecArguments(testcase.AgentRequest{Agent: "claude", Protocol: "anthropic"}, target, "placeholder", "/workspace", "sandbox")
+	joined := strings.Join(args, "\n")
+	assert.NotContains(t, args, "--env-file")
+	assert.Contains(t, joined, "ANTHROPIC_BASE_URL=https://gateway.example/anthropic")
+	assert.Contains(t, joined, "ANTHROPIC_AUTH_TOKEN=placeholder")
+	assert.NotContains(t, joined, "top-secret")
+	assert.Contains(t, joined, "ANTHROPIC_API_KEY=")
+	assert.False(t, strings.Contains(joined, "OPENAI_API_KEY"))
+}
+
+func TestAgentExecArgumentsPreserveUnversionedAnthropicBaseURL(t *testing.T) {
+	t.Parallel()
+	target := testcase.Target{Model: "test-model", BaseURL: "https://gateway.example/anthropic"}
+	args := agentExecArguments(testcase.AgentRequest{Agent: "claude", Protocol: "anthropic"}, target, "placeholder", "/workspace", "sandbox")
+	assert.Contains(t, strings.Join(args, "\n"), "ANTHROPIC_BASE_URL=https://gateway.example/anthropic")
 }
 
 func TestCodexCommandSelectsCustomResponsesProvider(t *testing.T) {
