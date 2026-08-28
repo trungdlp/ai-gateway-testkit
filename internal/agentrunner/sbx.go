@@ -42,16 +42,6 @@ func (r *SBX) Run(ctx context.Context, request testcase.AgentRequest, target tes
 	if err := writeFixture(workspace, request, target); err != nil {
 		return outcome, err
 	}
-	environmentFile, err := os.CreateTemp("", "agtk-agent-env-*")
-	if err != nil {
-		return outcome, fmt.Errorf("create agent environment: %w", err)
-	}
-	environmentPath := environmentFile.Name()
-	defer os.Remove(environmentPath)
-	if err := environmentFile.Chmod(0o600); err != nil {
-		environmentFile.Close()
-		return outcome, fmt.Errorf("secure agent environment: %w", err)
-	}
 	name := "agtk-" + request.Agent + "-" + randomSuffix()
 	created := false
 	defer func() {
@@ -77,13 +67,6 @@ func (r *SBX) Run(ctx context.Context, request testcase.AgentRequest, target tes
 	if err := r.allowGatewayNetwork(ctx, name, target); err != nil {
 		return outcome, err
 	}
-	if err := writeEnvironment(environmentFile, request, target); err != nil {
-		environmentFile.Close()
-		return outcome, err
-	}
-	if err := environmentFile.Close(); err != nil {
-		return outcome, fmt.Errorf("close agent environment: %w", err)
-	}
 
 	pwdOutput, err := exec.CommandContext(ctx, r.Executable, "exec", name, "pwd").CombinedOutput()
 	if err != nil {
@@ -93,12 +76,7 @@ func (r *SBX) Run(ctx context.Context, request testcase.AgentRequest, target tes
 	if containerWorkspace == "" {
 		return outcome, fmt.Errorf("resolve sbx workspace: empty path")
 	}
-	args := []string{"exec", "--env-file", environmentPath, "--env", credentialEnvironment(request) + "=" + placeholder}
-	if request.Agent == "claude" {
-		args = append(args, "--env", "ANTHROPIC_API_KEY=")
-	}
-	args = append(args, "--workdir", containerWorkspace, name)
-	args = append(args, agentCommand(request, target)...)
+	args := agentExecArguments(request, target, placeholder, containerWorkspace, name)
 	command := exec.CommandContext(ctx, r.Executable, args...)
 	output, err = command.CombinedOutput()
 	outcome.Output = string(output)
@@ -130,17 +108,19 @@ func writeFixture(workspace string, request testcase.AgentRequest, target testca
 	return nil
 }
 
-func writeEnvironment(file *os.File, request testcase.AgentRequest, target testcase.Target) error {
-	values := []string{"AGTK_TARGET_MODEL=" + target.Model}
+func agentExecArguments(request testcase.AgentRequest, target testcase.Target, placeholder, workspace, sandbox string) []string {
+	args := []string{"exec", "--env", "AGTK_TARGET_MODEL=" + target.Model}
 	if request.Protocol == "openai" {
-		values = append(values, "OPENAI_BASE_URL="+target.BaseURL)
+		args = append(args, "--env", "OPENAI_BASE_URL="+target.BaseURL)
 	} else {
-		values = append(values, "ANTHROPIC_BASE_URL="+target.BaseURL)
+		args = append(args, "--env", "ANTHROPIC_BASE_URL="+strings.TrimSuffix(target.BaseURL, "/v1"))
 	}
-	if _, err := file.WriteString(strings.Join(values, "\n") + "\n"); err != nil {
-		return fmt.Errorf("write agent environment: %w", err)
+	args = append(args, "--env", credentialEnvironment(request)+"="+placeholder)
+	if request.Agent == "claude" {
+		args = append(args, "--env", "ANTHROPIC_API_KEY=")
 	}
-	return nil
+	args = append(args, "--workdir", workspace, sandbox)
+	return append(args, agentCommand(request, target)...)
 }
 
 func (r *SBX) configureSecret(ctx context.Context, sandbox string, request testcase.AgentRequest, target testcase.Target) (string, error) {
