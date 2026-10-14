@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -162,4 +163,88 @@ func anthropicServer(t *testing.T, model string) *httptest.Server {
 			http.NotFound(writer, request)
 		}
 	}))
+}
+
+func TestSkipAuthChecks(t *testing.T) {
+	for _, protocol := range []string{"anthropic", "openai"} {
+		for _, tc := range []struct {
+			name                                   string
+			skipAuthChecks, noAuth, messageFailure bool
+		}{
+			{name: "default blocks", noAuth: true},
+			{name: "no-auth diagnostic", skipAuthChecks: true, noAuth: true},
+			{name: "authenticated default"},
+			{name: "authenticated skip", skipAuthChecks: true},
+			{name: "other failures still block", skipAuthChecks: true, noAuth: true, messageFailure: true},
+		} {
+			t.Run(protocol+"/"+tc.name, func(t *testing.T) {
+				fixture := anthropicServer(t, "test-model")
+				if protocol == "openai" {
+					fixture.Close()
+					fixture = openAIServer(t, "test-model")
+				}
+				defer fixture.Close()
+				var authRequests atomic.Int32
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					if r.URL.Path == "/v1/models" && (r.Header.Get("X-API-Key") != "test-secret" && r.Header.Get("Authorization") != "Bearer test-secret") {
+						authRequests.Add(1)
+					}
+					if tc.noAuth {
+						r.Header.Set("X-API-Key", "test-secret")
+						r.Header.Set("Authorization", "Bearer test-secret")
+					}
+					if tc.messageFailure && (r.URL.Path == "/v1/messages" || r.URL.Path == "/v1/responses") {
+						w.Header().Set("Content-Type", "application/json")
+						_, _ = w.Write([]byte(`{"type":"invalid","object":"invalid"}`))
+						return
+					}
+					fixture.Config.Handler.ServeHTTP(w, r)
+				}))
+				defer server.Close()
+				c, err := cases.Catalog()
+				require.NoError(t, err)
+				registry, err := profile.Load(c)
+				require.NoError(t, err)
+				targets := target.Resolved{Name: "fixture", Endpoints: map[string]testcase.Target{protocol: {Protocol: protocol, BaseURL: server.URL + "/v1", Model: "test-model", Credential: "test-secret", Timeout: time.Second, APIVersion: "2023-06-01", Retry: gateway.RetryPolicy{MaxRetries: 2, InitialBackoff: time.Nanosecond, MaxBackoff: time.Nanosecond}}}}
+				profileIDs := []string{"anthropic-tools", "anthropic-sdk-go", "behavioral-anthropic"}
+				authID, messageID, behaviorID := "ANT-AUTH-001", "ANT-MSG-001", "BEH-ANT-001"
+				if protocol == "openai" {
+					profileIDs = []string{"oai-tools", "oai-sdk-go", "behavioral-openai"}
+					authID, messageID, behaviorID = "OAI-AUTH-001", "OAI-RESP-001", "BEH-OAI-001"
+				}
+				value, err := New(c, registry, targets).Run(context.Background(), Options{Profiles: profileIDs, SkipAuthChecks: tc.skipAuthChecks})
+				require.NoError(t, err)
+				assert.Equal(t, tc.skipAuthChecks, value.Runtime.SkipAuthChecks)
+				byID := make(map[string]result.Scenario)
+				for _, scenario := range value.Scenarios {
+					byID[scenario.ID] = scenario
+				}
+				switch {
+				case tc.skipAuthChecks:
+					assert.Zero(t, authRequests.Load())
+					assert.Equal(t, testcase.StatusSkipped, byID[authID].Status)
+					for _, assertion := range byID[authID].Assertions {
+						assert.Equal(t, testcase.StatusSkipped, assertion.Status)
+						assert.Equal(t, "AUTH.CHECKS_SKIPPED", assertion.ReasonCode)
+					}
+					if tc.messageFailure {
+						assert.Equal(t, testcase.StatusFail, byID[messageID].Status)
+						assert.Equal(t, testcase.StatusBlocked, byID[behaviorID].Status)
+					} else {
+						assert.Zero(t, value.Summary.Blocked)
+						assert.Equal(t, testcase.StatusPass, byID[messageID].Status)
+						assert.Equal(t, result.VerdictIndeterminate, value.Profiles[0].Verdict)
+					}
+				case tc.noAuth:
+					assert.Equal(t, int32(2), authRequests.Load())
+					assert.Equal(t, testcase.StatusFail, byID[authID].Status)
+					assert.Equal(t, testcase.StatusBlocked, byID[messageID].Status)
+					assert.Equal(t, result.VerdictFail, value.Profiles[0].Verdict)
+				default:
+					assert.Equal(t, testcase.StatusPass, byID[authID].Status)
+					assert.Zero(t, value.Summary.Blocked)
+				}
+			})
+		}
+	}
 }

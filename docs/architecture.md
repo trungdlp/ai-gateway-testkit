@@ -34,6 +34,31 @@ target manifest + credentials       embedded profiles
 
 The engine runs scenarios sequentially. This gives deterministic ordering, predictable rate impact, and a bounded request budget. Independent failures do not stop the run. A scenario is blocked only when one of its declared scenario dependencies did not pass.
 
+### Explicitly skipped authentication
+
+`agtk run --skip-auth-checks` is an opt-in diagnostic execution policy for
+intentionally unauthenticated gateways. For configured protocols, scenarios in
+layer `protocol` and area `auth` are not executed. Each of their assertions is
+`skipped` with reason `AUTH.CHECKS_SKIPPED`; none is converted into a pass or fail.
+Their direct dependents may execute after the skipped authentication scenario
+is recorded. The scheduler still requires every other dependency to pass and
+does not turn an unconfigured protocol into skipped authentication.
+
+The catalog, assertion contracts, and profile requirements are unchanged.
+Required skipped assertions keep full readiness `INDETERMINATE`, unless another
+required assertion fails. Credential resolution, redaction, retry bounds, and
+agent-runner opt-in remain unchanged. Consequently users may supply a synthetic
+credential for a target whose local gateway ignores authentication.
+
+Report schema `1.2.0` adds `runtime.skip_auth_checks` as an optional boolean,
+omitted when false. JSON decoding remains compatible with `1.0.0` and `1.1.0`
+reports (absence of the new field means false), and schema URL validation still
+applies to both `1.1.0` and `1.2.0`. Producers emit `1.2.0`; older CLIs must be
+upgraded to read it. Text, HTML, and sanitized reports preserve this execution
+policy. Baseline comparison requires both catalog digest and authentication
+execution policy to match, so bypassing a prerequisite cannot appear to resolve
+an incompatibility in a strict baseline.
+
 ## Transient failure handling
 
 Raw HTTP and official SDK requests use the run's bounded retry budget. The default is two retries after the initial attempt with deterministic exponential backoff from 250 ms and a maximum wait of five seconds. HTTP `408`, `425`, `429`, `500`, `502`, `503`, and `504`, plus retryable network errors, are eligible. `Retry-After` seconds or HTTP dates are honored but capped by the configured maximum wait.

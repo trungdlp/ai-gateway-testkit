@@ -30,7 +30,7 @@ type Comparison struct {
 }
 
 func Reports(baseline, current result.Report) Comparison {
-	comparison := Comparison{BaselineRunID: baseline.RunID, CurrentRunID: current.RunID, Comparable: baseline.CatalogDigest == current.CatalogDigest}
+	comparison := Comparison{BaselineRunID: baseline.RunID, CurrentRunID: current.RunID, Comparable: baseline.CatalogDigest == current.CatalogDigest && baseline.Runtime.SkipAuthChecks == current.Runtime.SkipAuthChecks}
 	baselineAssertions := flatten(baseline)
 	currentAssertions := flatten(current)
 	ids := make(map[string]struct{}, len(baselineAssertions)+len(currentAssertions))

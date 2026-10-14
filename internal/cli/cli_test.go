@@ -3,6 +3,9 @@ package cli
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -142,4 +145,28 @@ func mapEnvironment(values map[string]string) Environment {
 		value, ok := values[name]
 		return value, ok
 	}
+}
+
+func TestRunSkipAuthChecksKeepsIndeterminateExitCode(t *testing.T) {
+	t.Parallel()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/v1/models" {
+			_, _ = fmt.Fprint(w, `{"data":[{"type":"model","id":"test-model"}]}`)
+		} else {
+			_, _ = fmt.Fprint(w, `{"type":"message","role":"assistant","model":"test-model","content":[{"type":"text","text":"hello"}]}`)
+		}
+	}))
+	defer server.Close()
+	env := mapEnvironment(map[string]string{"AI_GATEWAY_BASE_URL": server.URL + "/v1", "AI_GATEWAY_MODEL": "test-model", "AI_GATEWAY_API_KEY": "test-secret"})
+	var stdout, stderr bytes.Buffer
+	exitCode := Run(context.Background(), []string{"run", "--protocol", "anthropic", "--profile", "anthropic-core", "--skip-auth-checks", "--format", "json"}, &stdout, &stderr, env, BuildInfo{})
+	require.Equal(t, ExitChecksFailed, exitCode, stderr.String())
+	value, err := report.Decode(&stdout)
+	require.NoError(t, err)
+	assert.True(t, value.Runtime.SkipAuthChecks)
+	assert.Zero(t, value.Summary.Blocked)
+	assert.Zero(t, value.Summary.Failed)
+	assert.Equal(t, 3, value.Summary.Skipped)
+	assert.NotContains(t, stdout.String(), "test-secret")
 }

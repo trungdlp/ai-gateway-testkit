@@ -68,6 +68,7 @@ type runOptions struct {
 	retryBackoff      time.Duration
 	retryMaxWait      time.Duration
 	allowInsecureHTTP bool
+	skipAuthChecks    bool
 }
 
 type checksFailedError struct{}
@@ -132,6 +133,7 @@ func (a *app) newRunCommand() *cobra.Command {
 	flags.IntVar(&options.retries, "retries", options.retries, "retries after a transient failure (0-10)")
 	flags.DurationVar(&options.retryBackoff, "retry-backoff", options.retryBackoff, "initial exponential retry backoff")
 	flags.DurationVar(&options.retryMaxWait, "retry-max-wait", options.retryMaxWait, "maximum retry delay, including Retry-After")
+	flags.BoolVar(&options.skipAuthChecks, "skip-auth-checks", false, "skip authentication checks and run their dependents (diagnostic mode)")
 	flags.BoolVar(&options.allowInsecureHTTP, "allow-insecure-http", false, "allow plain HTTP for non-loopback targets")
 	return command
 }
@@ -169,7 +171,7 @@ func (a *app) runChecks(ctx context.Context, options runOptions) error {
 		return fmt.Errorf("invalid --agent-runner %q: expected none or sbx", options.agentRunner)
 	}
 	a.logger.InfoContext(ctx, "starting profiles", "target", resolved.Name, "profiles", profiles)
-	value, err := engine.New(c, registry, resolved, runner).Run(ctx, engine.Options{Profiles: profiles, Build: result.Build{Version: valueOr(a.build.Version, "dev"), Commit: valueOr(a.build.Commit, "unknown"), Date: valueOr(a.build.Date, "unknown")}})
+	value, err := engine.New(c, registry, resolved, runner).Run(ctx, engine.Options{Profiles: profiles, SkipAuthChecks: options.skipAuthChecks, Build: result.Build{Version: valueOr(a.build.Version, "dev"), Commit: valueOr(a.build.Commit, "unknown"), Date: valueOr(a.build.Date, "unknown")}})
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	SchemaVersion       = "1.1.0"
+	SchemaVersion       = "1.2.0"
 	reportSchemaBaseURL = "https://raw.githubusercontent.com/trungdlp/ai-gateway-testkit"
 )
 
@@ -30,6 +30,7 @@ type Build struct {
 }
 
 type Runtime struct {
+	SkipAuthChecks     bool              `json:"skip_auth_checks,omitempty"`
 	OS                 string            `json:"os"`
 	Arch               string            `json:"arch"`
 	GoVersion          string            `json:"go_version"`

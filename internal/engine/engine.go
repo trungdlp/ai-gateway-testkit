@@ -21,8 +21,9 @@ import (
 )
 
 type Options struct {
-	Profiles []string
-	Build    result.Build
+	Profiles       []string
+	SkipAuthChecks bool
+	Build          result.Build
 }
 
 type Engine struct {
@@ -62,7 +63,10 @@ func (e *Engine) Run(ctx context.Context, options Options) (result.Report, error
 					ready = false
 					break
 				}
-				if dependencyResult.Status != testcase.StatusPass {
+				dependencyDefinition, _ := e.catalog.Get(dependency)
+				skippedAuth := options.SkipAuthChecks && dependencyResult.Status == testcase.StatusSkipped &&
+					dependencyDefinition.Layer == testcase.LayerProtocol && dependencyDefinition.Area == "auth"
+				if dependencyResult.Status != testcase.StatusPass && !skippedAuth {
 					blockedBy = dependency
 				}
 			}
@@ -71,7 +75,10 @@ func (e *Engine) Run(ctx context.Context, options Options) (result.Report, error
 				continue
 			}
 			var scenario result.Scenario
-			if blockedBy != "" {
+			_, targetConfigured := environment.Target(definition.Suite)
+			if options.SkipAuthChecks && targetConfigured && definition.Layer == testcase.LayerProtocol && definition.Area == "auth" {
+				scenario = skippedAuthScenario(definition)
+			} else if blockedBy != "" {
 				scenario = blockedScenario(definition, blockedBy)
 			} else {
 				scenario = executeScenario(ctx, definition, environment)
@@ -93,7 +100,7 @@ func (e *Engine) Run(ctx context.Context, options Options) (result.Report, error
 	report := result.Report{
 		SchemaURL: result.SchemaURL(options.Build.Commit), SchemaVersion: result.SchemaVersion, CatalogVersion: catalog.Version, CatalogDigest: e.catalog.Digest(),
 		RunID: newRunID(), StartedAt: started, DurationMS: time.Since(started).Milliseconds(), Build: options.Build,
-		Runtime: result.Runtime{OS: runtime.GOOS, Arch: runtime.GOARCH, GoVersion: runtime.Version(), DependencyVersions: dependencyVersions(), Retry: retryResult(e.targets, environment.RetryStats())},
+		Runtime: result.Runtime{SkipAuthChecks: options.SkipAuthChecks, OS: runtime.GOOS, Arch: runtime.GOARCH, GoVersion: runtime.Version(), DependencyVersions: dependencyVersions(), Retry: retryResult(e.targets, environment.RetryStats())},
 		Target:  publicTarget(e.targets), SelectedProfiles: append([]string(nil), options.Profiles...), Profiles: evaluations, Scenarios: scenarios,
 	}
 	for _, scenario := range scenarios {
@@ -214,6 +221,14 @@ func safeRun(ctx context.Context, definition testcase.Definition, environment te
 		}
 	}()
 	return definition.Run(ctx, environment)
+}
+
+func skippedAuthScenario(definition testcase.Definition) result.Scenario {
+	scenario := result.Scenario{ID: definition.ID, Revision: definition.Revision, Title: definition.Title, Layer: definition.Layer, Suite: definition.Suite, Area: definition.Area, Status: testcase.StatusSkipped}
+	for _, assertion := range definition.Assertions {
+		scenario.Assertions = append(scenario.Assertions, result.Assertion{ID: definition.ID + "/" + assertion.ID, Title: assertion.Title, Requirement: assertion.Requirement, Impact: assertion.Impact, Status: testcase.StatusSkipped, ReasonCode: "AUTH.CHECKS_SKIPPED", Message: "authentication checks disabled by --skip-auth-checks"})
+	}
+	return scenario
 }
 
 func blockedScenario(definition testcase.Definition, dependency string) result.Scenario {

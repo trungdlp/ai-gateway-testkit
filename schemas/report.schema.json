@@ -6,7 +6,7 @@
   "required": ["$schema", "schema_version", "catalog_version", "catalog_digest", "run_id", "started_at", "duration_ms", "build", "runtime", "target", "selected_profiles", "profiles", "summary", "scenarios"],
   "properties": {
     "$schema": {"type": "string", "format": "uri"},
-    "schema_version": {"const": "1.1.0"},
+    "schema_version": {"const": "1.2.0"},
     "catalog_version": {"type": "string"},
     "catalog_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
     "run_id": {"type": "string", "minLength": 1},
@@ -30,7 +30,8 @@
         "arch": {"type": "string"},
         "go_version": {"type": "string"},
         "dependency_versions": {"type": "object", "additionalProperties": {"type": "string"}},
-        "retry": {"$ref": "#/$defs/retry"}
+        "retry": {"$ref": "#/$defs/retry"},
+        "skip_auth_checks": {"type": "boolean", "description": "Authentication scenarios were skipped explicitly; their dependents may run. Absent means false."}
       }
     },
     "retry": {

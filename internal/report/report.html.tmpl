@@ -184,7 +184,7 @@
 
     <section aria-labelledby="provenance-title"><div class="card"><div class="card-body p-4"><div class="row g-4 align-items-start">
       <div class="col-lg-4"><p class="section-kicker">Provenance</p><h2 class="h4" id="provenance-title">Verifiable report metadata</h2><p class="text-body-secondary small mb-0">This HTML is derived from a canonical, versioned JSON report. Stable IDs keep results traceable across CI and release decisions.</p></div>
-      <div class="col-lg-8"><dl class="provenance-grid mb-0"><div><dt>Run ID</dt><dd>{{.RunID}}</dd></div><div><dt>Started</dt><dd>{{.StartedAt}}</dd></div><div><dt>Catalog</dt><dd>{{.CatalogVersion}}</dd></div><div><dt>Schema</dt><dd>{{.SchemaVersion}}</dd></div><div><dt>Build</dt><dd>{{.BuildVersion}}</dd></div><div><dt>Commit</dt><dd>{{.BuildCommit}}</dd></div></dl></div>
+      <div class="col-lg-8"><dl class="provenance-grid mb-0"><div><dt>Run ID</dt><dd>{{.RunID}}</dd></div><div><dt>Started</dt><dd>{{.StartedAt}}</dd></div><div><dt>Catalog</dt><dd>{{.CatalogVersion}}</dd></div><div><dt>Schema</dt><dd>{{.SchemaVersion}}</dd></div>{{if .SkipAuthChecks}}<div><dt>Authentication</dt><dd>Skipped (--skip-auth-checks); not evaluated</dd></div>{{end}}<div><dt>Build</dt><dd>{{.BuildVersion}}</dd></div><div><dt>Commit</dt><dd>{{.BuildCommit}}</dd></div></dl></div>
     </div></div></div></section>
   </main>
 

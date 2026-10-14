@@ -56,3 +56,29 @@ func TestSanitizeRemovesShareSensitiveFields(t *testing.T) {
 	assert.Nil(t, sanitized.Scenarios[0].Evidence)
 	assert.Empty(t, sanitized.Scenarios[0].Assertions[0].Message)
 }
+
+func TestAuthenticationExecutionPolicySurvivesReportProcessing(t *testing.T) {
+	value := result.Report{SchemaURL: result.SchemaURL("unknown"), SchemaVersion: result.SchemaVersion, Runtime: result.Runtime{SkipAuthChecks: true}, Build: result.Build{Commit: "unknown"}}
+	var encoded bytes.Buffer
+	require.NoError(t, Write(&encoded, FormatJSON, Sanitize(value)))
+	decoded, err := Decode(&encoded)
+	require.NoError(t, err)
+	assert.True(t, decoded.Runtime.SkipAuthChecks)
+	var text bytes.Buffer
+	require.NoError(t, Write(&text, FormatText, decoded))
+	assert.Contains(t, text.String(), "skip-auth-checks")
+	var rendered bytes.Buffer
+	require.NoError(t, WriteHTML(&rendered, decoded))
+	assert.Contains(t, rendered.String(), "skip-auth-checks")
+}
+
+func TestDecodePreviousSchemaVersions(t *testing.T) {
+	for _, version := range []string{"1.0.0", "1.1.0"} {
+		value := result.Report{SchemaURL: result.SchemaURL("unknown"), SchemaVersion: version, Build: result.Build{Commit: "unknown"}}
+		var encoded bytes.Buffer
+		require.NoError(t, Write(&encoded, FormatJSON, value))
+		decoded, err := Decode(&encoded)
+		require.NoError(t, err)
+		assert.False(t, decoded.Runtime.SkipAuthChecks)
+	}
+}

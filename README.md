@@ -148,6 +148,39 @@ Exit codes are designed for automation:
 | `1` | At least one selected profile failed or was indeterminate. |
 | `2` | Configuration, invocation, catalog, runner, or report I/O failed. |
 
+## Diagnosing gateways without authentication
+
+For a deliberately unauthenticated local gateway, use `--skip-auth-checks` to
+collect model, message, tool, and SDK evidence without first requiring missing
+and invalid credentials to be rejected:
+
+```sh
+ANTHROPIC_GATEWAY_API_KEY=diagnostic-placeholder agtk run \
+  --target target.yaml --profile anthropic-core,anthropic-tools \
+  --skip-auth-checks --format json --output diagnostic.json
+```
+
+Credentials are still resolved from the target's `credential_env`; use a synthetic
+placeholder when the gateway does not require one. This option skips the
+protocol authentication scenarios entirely: no missing/invalid-key probes are
+sent, and their assertions are reported as `skipped` with reason
+`AUTH.CHECKS_SKIPPED`. Only those authentication dependencies are waived; failures
+in other prerequisites still block their dependents. Without the flag, execution
+is unchanged.
+
+Skipped authentication is neither a pass nor a failure. Profiles requiring it
+remain `INDETERMINATE` unless another required assertion fails, in which case
+that profile remains `FAIL`. Either verdict still exits with code `1`.
+JSON records the option as `runtime.skip_auth_checks`; text and HTML reports also
+label authentication as skipped. Compare reports using the same setting:
+different authentication execution policies are marked `not_comparable`.
+Skipping authentication may permit downstream inference or explicitly enabled
+agent scenarios to run, with their usual request costs and runner requirements.
+
+Report schema `1.2.0` adds the optional `runtime.skip_auth_checks` boolean; absent
+means `false`. This CLI still reads `1.0.0` and `1.1.0` reports. Older CLIs cannot
+read `1.2.0` reports and must be upgraded before rendering or comparing them.
+
 ## Catch regressions in CI
 
 Keep a known report as your baseline, then annotate a new run:

@@ -36,10 +36,10 @@ func Decode(reader io.Reader) (result.Report, error) {
 	if err := decoder.Decode(&value); err != nil {
 		return result.Report{}, err
 	}
-	if value.SchemaVersion != result.SchemaVersion && value.SchemaVersion != "1.0.0" {
+	if value.SchemaVersion != result.SchemaVersion && value.SchemaVersion != "1.1.0" && value.SchemaVersion != "1.0.0" {
 		return result.Report{}, fmt.Errorf("unsupported report schema version %q", value.SchemaVersion)
 	}
-	if value.SchemaVersion == result.SchemaVersion {
+	if value.SchemaVersion != "1.0.0" {
 		expected := result.SchemaURL(value.Build.Commit)
 		if value.SchemaURL != expected {
 			return result.Report{}, fmt.Errorf("report schema URL %q does not match build commit; expected %q", value.SchemaURL, expected)
@@ -83,6 +83,11 @@ func writeText(w io.Writer, value result.Report) error {
 	}
 	if _, err := fmt.Fprintf(w, "Retries:   %d across %d raw HTTP attempts (max %d per request)\n", value.Runtime.Retry.RawHTTPRetries, value.Runtime.Retry.RawHTTPAttempts, value.Runtime.Retry.MaxRetries); err != nil {
 		return err
+	}
+	if value.Runtime.SkipAuthChecks {
+		if _, err := fmt.Fprintln(w, "Auth:      skipped (--skip-auth-checks); authentication compatibility not evaluated"); err != nil {
+			return err
+		}
 	}
 	if len(value.Profiles) > 0 {
 		if _, err := fmt.Fprintln(w, "\nProfiles:"); err != nil {

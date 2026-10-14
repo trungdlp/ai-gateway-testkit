@@ -20,6 +20,7 @@ import (
 var htmlAssets embed.FS
 
 type htmlReport struct {
+	SkipAuthChecks     bool
 	Title              string
 	TargetName         string
 	Fingerprint        string
@@ -174,6 +175,7 @@ func newHTMLReport(value result.Report) htmlReport {
 		StartedAt:          value.StartedAt.UTC().Format("02 Jan 2006, 15:04 UTC"),
 		Duration:           formatDuration(value.DurationMS),
 		RunID:              value.RunID,
+		SkipAuthChecks:     value.Runtime.SkipAuthChecks,
 		CatalogVersion:     value.CatalogVersion,
 		CatalogDigest:      value.CatalogDigest,
 		SchemaVersion:      value.SchemaVersion,
